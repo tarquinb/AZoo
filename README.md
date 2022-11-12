@@ -12,10 +12,11 @@ Usage: python azoo.py [options]
 
 Options:
 
-update: Download latest list of apks and update local lists
-    e.g. python azoo.py update
+Download latest list of apks and update local lists
+            
+        python azoo.py update
 
-download <benign> <malware>:
+download [benign] [malware]:
   - Bulk download random APKs. Number of benign apks (i) and malware apks (j) to download 
         
         python azoo.py download i j
