@@ -8,7 +8,7 @@ http://doi.acm.org/10.1145/2901739.2903508
 
 Put your Androzoo API key in .apiconf
 
-Usage: python azoo.py <options>
+Usage: python azoo.py options
 
 Options:
 
