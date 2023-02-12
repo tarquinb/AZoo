@@ -29,7 +29,6 @@ if os.path.isfile(LISTDIR + '/latest.csv'):
     with open(LISTDIR + '/latest.csv', 'r') as f:
         TOTAL_COUNT = len(f.readlines()[1:])
 
-
 def download_file(url, dirname):
     local_filename = url.split('/')[-1]
     with open(dirname + '/' + local_filename, 'wb') as f:
@@ -44,7 +43,8 @@ def download_file(url, dirname):
                 dl += len(chunk)
                 f.write(chunk)
                 done = int(50 * dl / total_length)
-                print('\r{} [{} {}] {:2.2f} Mb/s'.format(local_filename ,'=' * done, ' ' * (50 - done), (dl/1048576)//(time.clock() - start)), end='')
+                print('\r{} [{} {}] {:2.2f} Mb/s'.format(local_filename, '=' * done,
+                      ' ' * (50 - done), (dl/1048576)//(time.clock() - start)), end='')
     return 0
 
 
@@ -63,20 +63,23 @@ def get_apk(url, outfile, dirname, num, total):
                 f.write(chunk)
                 # done = int(50 * dl / total_length)
                 # print('\r[{}/{}][{} {}] {:2.2f} Mb/s'.format(str(num), str(total), '=' * done, ' ' * (50 - done), (dl/1048576)//(time.clock() - start)))
-        print('\r[{}/{}] {:2.2f} %'.format(str(num), str(total), (num/total)*100), end='')
+        print('\r[{}/{}] {:2.2f} %'.format(str(num),
+              str(total), (num/total)*100), end='')
     return 0
+
 
 def update_lists():
     try:
         print('Downloading latest')
         if os.path.isfile(LISTDIR + '/latest.csv.gz'):
             os.remove(LISTDIR + '/latest.csv.gz')
-        download_file('https://androzoo.uni.lu/static/lists/latest.csv.gz', LISTDIR)
+        download_file(
+            'https://androzoo.uni.lu/static/lists/latest.csv.gz', LISTDIR)
     except requests.exceptions.RequestException as err:
         print('Error when getting latest list: {}'.format(err))
         return 1
 
-    print('Extracting csv...')    
+    print('Extracting csv...')
     if os.path.isfile(LISTDIR + '/latest.csv.gz'):
         latest_csv = gzip.open(LISTDIR + '/latest.csv.gz', 'rb')
         with open(LISTDIR + '/latest.csv', 'wb') as outf:
@@ -117,17 +120,18 @@ def update_lists():
                     if line.strip('\n').split(',')[0] not in malware_list:
                         with open(LISTDIR + '/malware_list_sha256', 'a') as malf:
                             malf.write(line.strip('\n').split(',')[0] + '\n')
-                print('\r[{} / {}] {:0.2f}%'.format(i, TOTAL_COUNT, (i / TOTAL_COUNT)*100), end='')  
+                print('\r[{} / {}] {:0.2f}%'.format(i,
+                      TOTAL_COUNT, (i / TOTAL_COUNT)*100), end='')
                 i += 1
-        
+
         print('Done!')
 
         with open(LISTDIR + '/benign_list_sha256', 'r') as f:
             print('{} Benign Samples'.format(len(f.readlines())))
-        
+
         with open(LISTDIR + '/malware_list_sha256', 'r') as f:
             print('{} Malware Samples'.format(len(f.readlines())))
-        
+
         os.remove(LISTDIR + '/latest.csv')
         return 0
     else:
@@ -147,14 +151,16 @@ def get_dl(path, num):
                 with open(LISTDIR + '/benign_list_sha256', 'r') as benf:
                     for line in benf:
                         benign_list_total.append(line.strip('\n'))
-                curr_list = [f[:-4] for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+                curr_list = [
+                    f[:-4] for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
                 return sample([f for f in benign_list_total if f not in curr_list], int(num))
         elif num == 'A':
             benign_list_total = []
             with open(LISTDIR + '/benign_list_sha256', 'r') as benf:
                 for line in benf:
                     benign_list_total.append(line.strip('\n'))
-            curr_list = [f[:-4] for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+            curr_list = [
+                f[:-4] for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
             return [f for f in benign_list_total if f not in curr_list]
     else:
         if num != 'A':
@@ -163,33 +169,35 @@ def get_dl(path, num):
                 with open(LISTDIR + '/malware_list_sha256', 'r') as benf:
                     for line in benf:
                         malware_list_total.append(line.strip('\n'))
-                curr_list = [f[:-4] for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+                curr_list = [
+                    f[:-4] for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
                 return sample([f for f in malware_list_total if f not in curr_list], int(num))
         elif num == 'A':
             malware_list_total = []
             with open(LISTDIR + '/malware_list_sha256', 'r') as benf:
                 for line in benf:
                     malware_list_total.append(line.strip('\n'))
-            curr_list = [f[:-4] for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+            curr_list = [
+                f[:-4] for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
             return [f for f in malware_list_total if f not in curr_list]
 
 
 class DownloadWorker(Thread):
-   def __init__(self, queue):
-       Thread.__init__(self)
-       self.queue = queue
+    def __init__(self, queue):
+        Thread.__init__(self)
+        self.queue = queue
 
-   def run(self):
-       while True:
-           url, sha, dirname, count, total  = self.queue.get()
-           get_apk(url, sha, dirname, count, total)
-           self.queue.task_done()
+    def run(self):
+        while True:
+            url, sha, dirname, count, total = self.queue.get()
+            get_apk(url, sha, dirname, count, total)
+            self.queue.task_done()
 
 
 def download(num_benign, num_malware):
     benign_download_list = get_dl(BENIGNDIR, num_benign)
     malware_download_list = get_dl(MALWAREDIR, num_malware)
-    
+
     print('Benign Downloads...')
 
     work_queue = Queue()
@@ -201,17 +209,19 @@ def download(num_benign, num_malware):
 
     if benign_download_list:
         for i, sha in enumerate(benign_download_list):
-            work_queue.put((con_url(sha), sha, BENIGNDIR, i + 1, len(benign_download_list)))
+            work_queue.put((con_url(sha), sha, BENIGNDIR,
+                           i + 1, len(benign_download_list)))
 
     work_queue.join()
-    
+
     print('Malware Downloads...')
     if malware_download_list:
         for i, sha in enumerate(malware_download_list):
-            work_queue.put((con_url(sha), sha, MALWAREDIR, i + 1, len(malware_download_list)))
+            work_queue.put((con_url(sha), sha, MALWAREDIR,
+                           i + 1, len(malware_download_list)))
     print('')
     work_queue.join()
-    
+
     return 0
 
 
